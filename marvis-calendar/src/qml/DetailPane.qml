@@ -56,6 +56,20 @@ Item {
 
     Component.onCompleted: updateClock()
 
+    // 日程变更后，若变更日期为当前所选日期则刷新列表
+    // 用 Connections 由引擎管理生命周期，避免组件重建时重复连接
+    Connections {
+        target: bridge
+        function onEventsChanged(d) {
+            if (d === root.dateStr) root.refresh(root.dateStr)
+        }
+    }
+
+    // 日程新增/编辑/删除对话框
+    EventDialog {
+        id: eventDialog
+    }
+
     Timer {
         interval: 1000
         running: true
@@ -227,6 +241,16 @@ Item {
                         }
                     }
                 }
+
+                // 点击列表项进入编辑（取完整事件回填表单；事件不存在则不打开）
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        var ev = bridge.event_for_edit(modelData.id)
+                        if (ev) eventDialog.openEdit(ev)
+                    }
+                }
             }
 
             // 空状态
@@ -256,7 +280,8 @@ Item {
             }
             MouseArea {
                 anchors.fill: parent
-                onClicked: {}
+                cursorShape: Qt.PointingHandCursor
+                onClicked: eventDialog.openCreate(root.dateStr)
             }
         }
     }
