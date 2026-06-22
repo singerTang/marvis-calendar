@@ -3,7 +3,7 @@
 ; 依赖产物：dist\鑫哥日历\ （PyInstaller onedir 输出）
 
 #define MyAppName "鑫哥日历"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.1"
 #define MyAppPublisher "鑫哥"
 #define MyAppExeName "鑫哥日历.exe"
 

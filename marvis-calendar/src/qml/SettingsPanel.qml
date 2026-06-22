@@ -98,7 +98,7 @@ Item {
             }
 
             ColumnLayout { spacing: 4; anchors.fill: parent
-                Text { text: "鑫哥日历 v0.1.0"; color: root.parent.parent.textPrimary; font.pixelSize: 11 }
+                Text { text: "鑫哥日历 v0.1.1"; color: root.parent.parent.textPrimary; font.pixelSize: 11 }
                 Text { text: "PySide6 + QML · 永久免费 · 无广告"; color: root.parent.parent.textTertiary; font.pixelSize: 9 }
             }
         }
