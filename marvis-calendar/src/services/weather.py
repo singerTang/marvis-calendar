@@ -110,7 +110,7 @@ class WeatherService:
         """通过 IP 定位用户城市"""
         try:
             # 使用免费 IP 定位服务
-            resp = httpx.get("https://ipapi.co/json/", timeout=5.0)
+            resp = httpx.get("https://ipapi.co/json/", timeout=3.0)
             if resp.status_code == 200:
                 data = resp.json()
                 city = data.get("city", "")
@@ -122,7 +122,7 @@ class WeatherService:
 
         # 备用定位服务
         try:
-            resp = httpx.get("http://ip-api.com/json/?lang=zh-CN", timeout=5.0)
+            resp = httpx.get("http://ip-api.com/json/?lang=zh-CN", timeout=3.0)
             if resp.status_code == 200:
                 data = resp.json()
                 city = data.get("city", "")
@@ -132,7 +132,7 @@ class WeatherService:
         except Exception as e:
             print(f"[Weather] 备用定位也失败: {e}")
 
-        return "Beijing"  # 默认北京
+        return "Changsha"  # 默认长沙
 
     def _get_city(self) -> str:
         """获取城市名，如果未设置则自动定位"""
@@ -147,6 +147,14 @@ class WeatherService:
         if self._cache and (time.time() - self._cache_ts) < CACHE_TTL:
             return self._cache
         return None
+
+    def _get_stale_now(self) -> Optional[dict]:
+        cached_now = self._cache.get("now")
+        if not cached_now:
+            return None
+        stale = dict(cached_now)
+        stale["_stale"] = True
+        return stale
 
     @staticmethod
     def _read_weather_text(condition: dict) -> str:
@@ -194,7 +202,7 @@ class WeatherService:
             # wttr.in JSON 接口
             url = f"{API_BASE}/{city}?format=j1"
             # 注：wttr.in 不识别 Accept-Language，中文描述由 WEATHER_CN_MAP 映射提供
-            resp = httpx.get(url, timeout=8.0)
+            resp = httpx.get(url, timeout=5.0)
             resp.raise_for_status()
             data = resp.json()
 
@@ -219,10 +227,10 @@ class WeatherService:
 
         except Exception as e:
             print(f"[Weather] 获取天气失败: {e}")
-            if cached and "now" in cached:
-                cached["now"]["_stale"] = True
-                return cached["now"]
-            return {"temp": "--", "text": "获取失败", "icon": "❓", "city": city, "error": str(e)}
+            stale = self._get_stale_now()
+            if stale:
+                return stale
+            return {"temp": "--", "text": "天气暂不可用", "icon": "⛅", "city": city, "error": str(e)}
 
     def forecast(self, days: int = 3) -> dict:
         """获取多日预报。"""

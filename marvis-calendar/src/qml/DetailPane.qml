@@ -118,20 +118,20 @@ Item {
 
             ColumnLayout {
                 id: weatherHeader
-                Layout.minimumWidth: 68
-                width: 68
+                Layout.minimumWidth: 82
+                width: 82
                 Layout.alignment: Qt.AlignTop
                 spacing: 2
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: root.weatherData.icon || "⛅"
+                    text: root.weatherData.error ? "⛅" : (root.weatherData.icon || "⛅")
                     font.pixelSize: 30
                 }
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: root.weatherData.loading ? "..." : ((root.weatherData.temp || "--") + "℃")
+                    text: root.weatherData.loading ? "..." : (root.weatherData.error ? "—" : ((root.weatherData.temp || "--") + "℃"))
                     color: root.textPrimary
                     font.pixelSize: 14
                     font.weight: 700
@@ -139,11 +139,15 @@ Item {
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: root.weatherData.loading ? "" : (root.weatherData.text || "")
+                    text: root.weatherData.loading
+                          ? ""
+                          : (root.weatherData.error
+                             ? "天气暂不可用"
+                             : ((root.weatherData.text || "") + (root.weatherData._stale ? " · 稍早" : "")))
                     color: root.textTertiary
                     font.pixelSize: 10
                     elide: Text.ElideRight
-                    width: 68
+                    width: 82
                     horizontalAlignment: Text.AlignHCenter
                 }
             }

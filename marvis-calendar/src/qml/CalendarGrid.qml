@@ -107,7 +107,7 @@ Item {
         // 星期头
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 32
+            Layout.preferredHeight: 34
             spacing: 0
             Repeater {
                 model: ["一","二","三","四","五","六","日"]
@@ -115,7 +115,7 @@ Item {
                     Layout.fillWidth: true
                     text: modelData
                     color: index >= 5 ? root.weekendColor : root.textSecondary
-                    font.pixelSize: 14; font.weight: 600
+                    font.pixelSize: 15; font.weight: 600
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
@@ -124,9 +124,10 @@ Item {
         // 日期网格（6行 x 7列）
         GridLayout {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.fillHeight: false
+            Layout.preferredHeight: Math.min(500, Math.max(420, root.height - monthHeader.height - 150))
             columns: 7; rows: 6
-            rowSpacing: 4; columnSpacing: 0
+            rowSpacing: 2; columnSpacing: 0
 
             Repeater {
                 model: root.gridData
@@ -146,7 +147,7 @@ Item {
                     // 日期内容（非本月格子留空白）
                     Item {
                         anchors.fill: parent
-                        anchors.margins: 2
+                        anchors.margins: 1
                         visible: modelData.isCurrentMonth
 
                         Item {
@@ -162,7 +163,7 @@ Item {
                         Rectangle {
                             id: selectCircle
                             anchors.centerIn: selectedDateContent
-                            width: Math.max(44, selectedDateContent.width + 16, selectedDateContent.height + 10)
+                            width: Math.max(48, selectedDateContent.width + 18, selectedDateContent.height + 12)
                             height: width
                             radius: width / 2
                             antialiasing: true
@@ -193,7 +194,7 @@ Item {
                             id: dayText
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.top: parent.top
-                            anchors.topMargin: 6
+                            anchors.topMargin: 8
                             
                             text: modelData.day
                             color: {
@@ -203,7 +204,7 @@ Item {
                                 if (modelData.isWeekend) return root.weekendColor
                                 return root.textPrimary
                             }
-                            font.pixelSize: 18
+                            font.pixelSize: 22
                             font.weight: (modelData.isToday || isSelected) ? 700 : 500
 
                             Behavior on anchors.topMargin {
@@ -251,18 +252,21 @@ Item {
                                 if (modelData.solarTerm) return "#f5a623"
                                 return root.textTertiary
                             }
-                            font.pixelSize: 11
+                            font.pixelSize: 13
                             font.weight: modelData.festival ? 600 : 400
                             visible: text !== ""
                         }
 
-                        // 事件圆点
+                        // 日程标记：短横胶囊样式，避免在大格子里形成孤立蓝点。
                         Rectangle {
-                            anchors.bottom: parent.bottom
-                            anchors.bottomMargin: 4
+                            anchors.top: lunarText.visible ? lunarText.bottom : dayText.bottom
+                            anchors.topMargin: 6
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: 5; height: 5; radius: 2.5
-                            color: root.accent
+                            width: 16
+                            height: 3
+                            radius: 1.5
+                            opacity: modelData.isToday ? 0.95 : 0.82
+                            color: modelData.isToday ? "#ffffff" : root.accent
                             visible: modelData.hasEvent
                         }
                     }

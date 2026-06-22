@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 Window {
     id: root
-    width: 680
+    width: 800
     height: 780
     visible: true
     flags: Qt.FramelessWindowHint | Qt.Window
@@ -95,7 +95,7 @@ Window {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.preferredWidth: 0.85
+                Layout.preferredWidth: 1.0
                 radius: 12
                 color: root.cardBg
                 border { width: 1; color: root.cardBorder }
@@ -113,7 +113,7 @@ Window {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.preferredWidth: 1.35
+                Layout.preferredWidth: 1.55
                 radius: 12
                 color: root.cardBg
                 border { width: 1; color: root.cardBorder }
