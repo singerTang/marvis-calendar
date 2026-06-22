@@ -19,6 +19,7 @@ TOOLS_DIR = os.path.join(PROJECT_DIR, "tools")
 ISCC_CANDIDATES = [
     r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
     r"C:\Program Files\Inno Setup 6\ISCC.exe",
+    os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "Inno Setup 6", "ISCC.exe"),
 ]
 
 
@@ -52,6 +53,11 @@ def make_bmp_icon():
     return out
 
 
+def safe_print(text=""):
+    encoding = sys.stdout.encoding or "utf-8"
+    print(str(text).encode(encoding, errors="replace").decode(encoding))
+
+
 def main():
     iscc = find_iscc()
     if not iscc:
@@ -76,13 +82,13 @@ def main():
         else:
             new_lines.append(ln)
     tmp_iss = os.path.join(PROJECT_DIR, "_build_tmp.iss")
-    with open(tmp_iss, "w", encoding="utf-8-sig") as f:
+    with open(tmp_iss, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
-    print("ISCC :", iscc)
-    print("脚本 :", iss_name, "(临时副本 _build_tmp.iss)")
-    print("图标 : BMP 编码临时图标", bmp_icon)
-    print("-" * 50)
+    safe_print(f"ISCC : {iscc}")
+    safe_print(f"脚本 : {iss_name} (临时副本 _build_tmp.iss)")
+    safe_print(f"图标 : BMP 编码临时图标 {bmp_icon}")
+    safe_print("-" * 50)
 
     try:
         # 经 cmd.exe 启动 ISCC：本机直接 CreateProcess 该 exe 间歇 WinError 2，
@@ -95,10 +101,10 @@ def main():
             encoding="mbcs",
             errors="replace",
         )
-        print(result.stdout or "")
+        safe_print(result.stdout or "")
         if result.stderr:
-            print("--- STDERR ---")
-            print(result.stderr)
+            safe_print("--- STDERR ---")
+            safe_print(result.stderr)
     finally:
         for p in (tmp_iss, bmp_icon):
             try:
@@ -106,8 +112,8 @@ def main():
             except OSError:
                 pass
 
-    print("-" * 50)
-    print("返回码:", result.returncode)
+    safe_print("-" * 50)
+    safe_print(f"返回码: {result.returncode}")
     return result.returncode
 
 

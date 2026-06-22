@@ -4,13 +4,11 @@
 """
 
 import sys
-import ctypes
-from ctypes import wintypes
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QSurfaceFormat, QIcon
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QAction, QDesktopServices, QSurfaceFormat, QIcon
+from PySide6.QtWidgets import QApplication, QMenu
 from PySide6.QtQml import QQmlApplicationEngine
 
 from src.models.database import Database
@@ -18,8 +16,9 @@ from src.services.calendar import CalendarService
 from src.services.almanac import AlmanacService
 from src.services.weather import WeatherService
 from src.bridge import Bridge
-from src.shell import Shell
 from src.services.reminder import ReminderService
+from src.services.clock_hook import ClockHook
+from src.window_controller import ClockCalendarWindowController
 
 
 def _db_path() -> Path:
@@ -71,14 +70,38 @@ def main():
     qwin = engine.rootObjects()[0]
 
     # 使用 Qt 原生无边框 + 透明背景
-    qwin.setFlags(Qt.FramelessWindowHint | Qt.Window)
-    qwin.show()
+    qwin.setFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
+    clock_controller = ClockCalendarWindowController(qwin)
+    clock_controller.move_to_bottom_right()
+    # 启动时不弹主窗口；任务栏时间区域由鼠标钩子接管。
+    qwin.setProperty("visible", False)
 
-    # 系统托盘
     app.setQuitOnLastWindowClosed(False)
-    shell = Shell(app, qwin)
-    reminder = ReminderService(shell.tray)
+    reminder = ReminderService(None)
     reminder.schedule_upcoming(db)
+
+    clock_hook = ClockHook(app)
+    clock_hook.clockClicked.connect(clock_controller.toggle)
+
+    def show_clock_menu(x, y):
+        menu = QMenu()
+        settings_action = QAction("任务栏时钟设置", menu)
+        settings_action.triggered.connect(
+            lambda: QDesktopServices.openUrl(QUrl("ms-settings:taskbar"))
+        )
+        menu.addAction(settings_action)
+
+        menu.addSeparator()
+        quit_action = QAction("退出", menu)
+        quit_action.triggered.connect(QApplication.quit)
+        menu.addAction(quit_action)
+        menu.exec(clock_hook.menu_position(x, y, menu.sizeHint()))
+
+    clock_hook.clockRightClicked.connect(show_clock_menu)
+    if not clock_hook.install():
+        print(f"[ClockHook] 安装失败，Win32 错误码：{clock_hook.last_error()}")
+
+    app.aboutToQuit.connect(clock_hook.uninstall)
 
     sys.exit(app.exec())
 

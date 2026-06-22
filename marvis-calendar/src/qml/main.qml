@@ -81,19 +81,8 @@ Window {
         Item {
             id: titleBar
             anchors { top: parent.top; left: parent.left; right: parent.right }
-            height: 12
+            height: 0
             z: 10
-
-            // 拖拽移动
-            MouseArea {
-                anchors.fill: parent
-                property point lastPos: Qt.point(0, 0)
-                onPressed: { lastPos = Qt.point(mouse.x, mouse.y) }
-                onPositionChanged: {
-                    root.x += mouse.x - lastPos.x
-                    root.y += mouse.y - lastPos.y
-                }
-            }
         }
 
         // ─── 双卡片区域 ───────────────────────────────────────────────
